@@ -1,0 +1,115 @@
+name: holbietrips
+
+services:
+  app:
+    image: holbietrips-app:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      DATABASE_URL: postgresql://holbie:local_demo_database_password@db:5432/holbietrips
+      FAKE_PAYMENT_URL: http://fake-payment:8081
+      FAKE_MAIL_URL: http://fake-mail:8082
+      PAYMENT_SIGNING_KEY: local-demo-payment-signing-key-not-a-real-secret
+      APP_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      SESSION_TTL_HOURS: 8
+      # Enables the optional local support diagnostics route used by the lab.
+      SUPPORT_DIAGNOSTICS_ENABLED: "true"
+      DESTINATION_PACK_FILE: /workspace/database/fixtures/destination-pack-altered.json
+      DESTINATION_PACK_SHA256: 78f5ba6c78041a2f7cff89ad032c5df7a5a03c9dddbe63150d7ca2d23be4bc93
+      PASSPORT_PROTECTION_MODE: legacy-base64
+    depends_on:
+      db:
+        condition: service_healthy
+      fake-payment:
+        condition: service_healthy
+      fake-mail:
+        condition: service_healthy
+    networks: [lab]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      start_period: 20s
+      start_interval: 1s
+      interval: 60s
+      timeout: 3s
+      retries: 3
+
+  local-gateway:
+    image: holbietrips-app:local
+    pull_policy: never
+    command: ["node", "services/local-gateway/dist/server.js"]
+    environment:
+      PORT: 8083
+      UPSTREAM_HOST: app
+      UPSTREAM_PORT: 8080
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:8083"
+    networks: [lab, ingress]
+    restart: unless-stopped
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: holbietrips
+      POSTGRES_USER: holbie
+      POSTGRES_PASSWORD: local_demo_database_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/migrations/001_initial.sql:/docker-entrypoint-initdb.d/10_001_initial.sql:ro
+      - ./database/seeds/001_demo.sql:/docker-entrypoint-initdb.d/20_001_demo.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U holbie -d holbietrips"]
+      start_period: 20s
+      start_interval: 1s
+      interval: 60s
+      timeout: 3s
+      retries: 3
+    networks: [lab]
+
+  fake-payment:
+    image: holbietrips-app:local
+    pull_policy: never
+    command: ["node", "services/fake-payment/dist/server.js"]
+    environment:
+      PORT: 8081
+      PAYMENT_SIGNING_KEY: local-demo-payment-signing-key-not-a-real-secret
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8081/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      start_period: 20s
+      start_interval: 1s
+      interval: 60s
+      timeout: 3s
+      retries: 3
+    networks: [lab]
+
+  fake-mail:
+    image: holbietrips-app:local
+    pull_policy: never
+    command: ["node", "services/fake-mail/dist/server.js"]
+    environment:
+      PORT: 8082
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8082/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      start_period: 20s
+      start_interval: 1s
+      interval: 60s
+      timeout: 3s
+      retries: 3
+    networks: [lab]
+
+volumes:
+  postgres-data:
+
+networks:
+  lab:
+    internal: true
+  ingress:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"

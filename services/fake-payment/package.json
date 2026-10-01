@@ -1,0 +1,9 @@
+{
+  "name": "@holbietrips/fake-payment",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "tsc -p tsconfig.json" },
+  "dependencies": { "fastify": "^5.5.0" },
+  "devDependencies": { "@types/node": "^24.3.0", "typescript": "^5.9.2" }
+}

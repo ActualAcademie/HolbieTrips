@@ -1,0 +1,16 @@
+{
+  "name": "holbietrips",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["apps/*", "services/*"],
+  "scripts": {
+    "build": "npm run build -w @holbietrips/web && npm run build -w @holbietrips/api && npm run build -w @holbietrips/fake-payment && npm run build -w @holbietrips/fake-mail && tsc -p services/local-gateway/tsconfig.json",
+    "test": "vitest run --config vitest.config.ts",
+    "dev": "npm run dev -w @holbietrips/api"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

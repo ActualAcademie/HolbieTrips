@@ -1,0 +1,22 @@
+{
+  "packVersion": "2027.1",
+  "supplier": "HolbieTripsSync",
+  "destinations": [
+    {
+      "slug": "lisbonne-lumiere",
+      "travelTip": "Keep a little time for the sunset from Miradouro da Senhora."
+    },
+    {
+      "slug": "fjord-norvegien",
+      "travelTip": "Pack a light waterproof jacket, even on clear mornings."
+    },
+    {
+      "slug": "kyoto-saisons",
+      "travelTip": "Visit the eastern temples early for a quieter walk."
+    },
+    {
+      "slug": "atlas-etoiles",
+      "travelTip": "Nights are cool in the mountains; bring a warm layer."
+    }
+  ]
+}
