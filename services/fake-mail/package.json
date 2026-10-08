@@ -4,6 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": { "build": "tsc -p tsconfig.json" },
-  "dependencies": { "fastify": "^5.5.0" },
+  "dependencies": { "fastify": "^5.12.5" },
   "devDependencies": { "@types/node": "^24.3.0", "typescript": "^5.9.2" }
 }

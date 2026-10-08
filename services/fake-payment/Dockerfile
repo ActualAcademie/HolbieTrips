@@ -1,4 +1,4 @@
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /service
 COPY tsconfig.base.json /tsconfig.base.json
 COPY services/fake-payment/package.json ./
@@ -7,7 +7,7 @@ COPY services/fake-payment/tsconfig.json ./
 COPY services/fake-payment/src ./src
 RUN npm run build
 
-FROM node:20-alpine
+FROM node:24-alpine
 WORKDIR /service
 COPY services/fake-payment/package.json ./
 RUN npm install --omit=dev
